@@ -121,7 +121,7 @@ export function extractPathsFromCommand(command: string): string[] {
 			token.startsWith("~") ||
 			(!token.startsWith("-") && token.includes("/"))
 		) {
-			paths.push(token.replace(/^~/, process.env.HOME || "~"));
+			paths.push(token.replace(/^~/, process.env.HOME ?? "~"));
 		}
 	}
 	return paths;
