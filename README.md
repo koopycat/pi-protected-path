@@ -12,13 +12,13 @@ patterns in `.agentignore` and personal defaults in `~/.pi/.agentignore`.
 ## Install
 
 ```bash
-pi install git:github.com/koopycat/pi-protected-path@v0.1.0
+pi install git:github.com/koopycat/pi-protected-path@v0.1.1
 ```
 
 To remove it:
 
 ```bash
-pi remove git:github.com/koopycat/pi-protected-path@v0.1.0
+pi remove git:github.com/koopycat/pi-protected-path@v0.1.1
 ```
 
 Pi packages execute local code. Review third-party package source before installation.

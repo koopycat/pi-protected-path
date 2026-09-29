@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync, readFileSync, rmdirSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, rmdirSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { join } from "node:path";
 
@@ -111,6 +111,7 @@ describe("loadGlobalAgentignore", () => {
 	let originalContent: Buffer | undefined;
 
 	beforeEach(() => {
+		mkdirSync(join(homedir(), ".pi"), { recursive: true });
 		try {
 			originalContent = readFileSync(globalPath);
 			hadGlobal = true;

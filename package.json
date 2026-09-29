@@ -1,6 +1,6 @@
 {
 	"name": "pi-protected-path",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Pi extension that requires approval before agents access sensitive project files matched by .agentignore patterns.",
 	"keywords": [
