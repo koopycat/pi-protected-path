@@ -86,8 +86,8 @@ describe("loadAgentignore", () => {
 		writeFileSync(join(tmpDir, ".agentignore"), "# comment\n\n*.env\nsecret/\n\n# another comment\nconfig.yml\n");
 		const patterns = loadAgentignore(tmpDir);
 		expect(patterns.map((p) => p.raw)).toEqual(["*.env", "secret/", "config.yml"]);
-		expect(patterns[0].dirOnly).toBe(false);
-		expect(patterns[1].dirOnly).toBe(true);
+		expect(patterns[0]?.dirOnly).toBe(false);
+		expect(patterns[1]?.dirOnly).toBe(true);
 	});
 
 	it("returns empty array on read error", () => {
@@ -143,8 +143,8 @@ describe("loadGlobalAgentignore", () => {
 		writeFileSync(globalPath, "*.pem\nssh/\n", { mode: 0o600 });
 		const patterns = loadGlobalAgentignore();
 		expect(patterns.map((p) => p.raw)).toEqual(["*.pem", "ssh/"]);
-		expect(patterns[0].dirOnly).toBe(false);
-		expect(patterns[1].dirOnly).toBe(true);
+		expect(patterns[0]?.dirOnly).toBe(false);
+		expect(patterns[1]?.dirOnly).toBe(true);
 	});
 
 	it("ignores comments and blank lines in global file", () => {
@@ -246,11 +246,25 @@ describe("extractPathsFromCommand", () => {
 	it("extracts tilde paths", () => {
 		const result = extractPathsFromCommand("cat ~/.ssh/id_rsa");
 		expect(result).toHaveLength(1);
-		expect(result[0].startsWith("~")).toBe(false);
+		expect(result[0]?.startsWith("~")).toBe(false);
 	});
 
 	it("extracts plain paths with slashes", () => {
 		expect(extractPathsFromCommand("cat src/main.ts")).toContain("src/main.ts");
+	});
+
+	it("extracts plain protected filenames", () => {
+		expect(extractPathsFromCommand("cat .env")).toContain(".env");
+		expect(extractPathsFromCommand("cat credentials.json")).toContain("credentials.json");
+	});
+
+	it("extracts quoted filenames", () => {
+		expect(extractPathsFromCommand('cat ".env"')).toContain(".env");
+		expect(extractPathsFromCommand("cat 'credentials.json'")).toContain("credentials.json");
+	});
+
+	it("extracts environment variable assignment values", () => {
+		expect(extractPathsFromCommand("CONFIG=./secrets/config.json command")).toContain("./secrets/config.json");
 	});
 
 	it("ignores flags and options", () => {

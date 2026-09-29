@@ -22,7 +22,7 @@ export function globToRegex(glob: string): RegExp {
 	let regex = "";
 	let i = 0;
 	while (i < pattern.length) {
-		const c = pattern[i];
+		const c = pattern[i] ?? "";
 		if (c === "*" && pattern[i + 1] === "*") {
 			if (pattern[i + 2] === "/") {
 				regex += "(?:.*/)?";
@@ -110,19 +110,32 @@ export function isProtected(cwd: string, filePath: string, patterns: Pattern[]):
 }
 
 export function extractPathsFromCommand(command: string): string[] {
-	// Naive extraction of potential file paths from a bash command
+	// Keep every non-option shell word as a candidate. isProtected() filters
+	// candidates against configured patterns, which catches plain names such as
+	// `.env` without attempting to fully parse arbitrary shell programs.
 	const paths: string[] = [];
-	const tokens = command.split(/\s+/);
-	for (const token of tokens) {
-		if (
-			token.startsWith("./") ||
-			token.startsWith("../") ||
-			token.startsWith("/") ||
-			token.startsWith("~") ||
-			(!token.startsWith("-") && token.includes("/"))
-		) {
-			paths.push(token.replace(/^~/, process.env.HOME ?? "~"));
+	const operators = new Set(["|", "||", "&&", ";", ">", ">>", "<", "2>", "2>>", "&>"]);
+
+	for (const rawWord of command.split(/\s+/)) {
+		const shellWord = rawWord.replace(/^['"]+|['";]+$/g, "");
+		if (!shellWord || shellWord.startsWith("-") || operators.has(shellWord)) {
+			continue;
+		}
+
+		const assignment = shellWord.match(/^[A-Za-z_][A-Za-z0-9_]*=(.+)$/);
+		const candidates = assignment?.[1]?.split(":") ?? [shellWord];
+		for (const candidate of candidates) {
+			const looksLikePath =
+				candidate.startsWith(".") ||
+				candidate.startsWith("/") ||
+				candidate.startsWith("~") ||
+				candidate.includes("/") ||
+				candidate.includes(".");
+			if (looksLikePath) {
+				paths.push(candidate.replace(/^~/, process.env.HOME ?? "~"));
+			}
 		}
 	}
+
 	return paths;
 }
